@@ -1,0 +1,6 @@
+1.
+https://www.reddit.com/r/wireshark/comments/91h1mx/extracting_data_from_capture_file_for_analysis/
+
+2.
+https://serverfault.com/questions/38626/how-can-i-read-pcap-files-in-a-friendly-format
+
