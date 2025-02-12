@@ -1,0 +1,5 @@
+1.
+https://stackoverflow.com/questions/43953323/change-user-password-with-one-bash-command-line
+2.https://unix.stackexchange.com/questions/26047/how-to-correctly-add-a-path-to-path
+3.https://stackoverflow.com/questions/39939853/exploit-system-call-in-c
+4.http://homepage.cs.latrobe.edu.au/ptscott/ENS/tutorials/4/index.html
