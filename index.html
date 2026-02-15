@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snow Crash - Security CTF Challenge</title>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --cyber-green: #00ff41;
+            --cyber-red: #ff0051;
+            --cyber-blue: #00d9ff;
+            --dark-bg: #0a0e27;
+            --darker-bg: #050811;
+            --gray-text: #8b92b0;
+            --light-text: #e0e6ff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Share Tech Mono', monospace;
+            background: var(--darker-bg);
+            color: var(--light-text);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* Scanline effect */
+        .scanlines {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0, 255, 65, 0.03),
+                rgba(0, 255, 65, 0.03) 1px,
+                transparent 1px,
+                transparent 2px
+            );
+            pointer-events: none;
+            z-index: 9999;
+            animation: scanline 8s linear infinite;
+        }
+
+        @keyframes scanline {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(10px); }
+        }
+
+        /* Matrix rain effect */
+        .matrix-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at center, rgba(0, 255, 65, 0.05) 0%, transparent 70%);
+            z-index: 0;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Header */
+        header {
+            padding: 2rem 0;
+            border-bottom: 2px solid var(--cyber-green);
+            backdrop-filter: blur(10px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(5, 8, 17, 0.95);
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.2);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.8rem;
+            font-weight: 900;
+            color: var(--cyber-green);
+            text-decoration: none;
+            letter-spacing: 0.1em;
+            text-shadow: 0 0 10px var(--cyber-green), 0 0 20px rgba(0, 255, 65, 0.5);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .logo::before {
+            content: '⚠';
+            animation: blink 2s ease-in-out infinite;
+        }
+
+        @keyframes blink {
+            0%, 50%, 100% { opacity: 1; }
+            25%, 75% { opacity: 0.3; }
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--gray-text);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            position: relative;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .nav-links a:hover {
+            color: var(--cyber-green);
+            text-shadow: 0 0 5px var(--cyber-green);
+        }
+
+        .nav-links a::before {
+            content: '>';
+            position: absolute;
+            left: -15px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .nav-links a:hover::before {
+            opacity: 1;
+        }
+
+        /* Hero Section */
+        .hero {
+            padding: 10rem 0 8rem;
+            position: relative;
+        }
+
+        .glitch {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 5rem;
+            font-weight: 900;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+            color: var(--cyber-green);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            animation: glitch 3s infinite;
+            position: relative;
+            text-shadow: 
+                0 0 10px var(--cyber-green),
+                0 0 20px var(--cyber-green),
+                0 0 40px rgba(0, 255, 65, 0.5);
+        }
+
+        @keyframes glitch {
+            0%, 90%, 100% {
+                transform: translate(0);
+            }
+            92% {
+                transform: translate(-2px, 2px);
+            }
+            94% {
+                transform: translate(2px, -2px);
+            }
+            96% {
+                transform: translate(-2px, -2px);
+            }
+        }
+
+        .glitch::before,
+        .glitch::after {
+            content: 'SNOW CRASH';
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .glitch::before {
+            color: var(--cyber-red);
+            animation: glitch-before 2s infinite;
+            clip-path: polygon(0 0, 100% 0, 100% 45%, 0 45%);
+        }
+
+        .glitch::after {
+            color: var(--cyber-blue);
+            animation: glitch-after 3s infinite;
+            clip-path: polygon(0 55%, 100% 55%, 100% 100%, 0 100%);
+        }
+
+        @keyframes glitch-before {
+            0%, 100% {
+                transform: translate(0);
+            }
+            50% {
+                transform: translate(-3px, 3px);
+            }
+        }
+
+        @keyframes glitch-after {
+            0%, 100% {
+                transform: translate(0);
+            }
+            50% {
+                transform: translate(3px, -3px);
+            }
+        }
+
+        .hero-subtitle {
+            font-size: 1.3rem;
+            color: var(--cyber-blue);
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.3em;
+            text-shadow: 0 0 5px var(--cyber-blue);
+        }
+
+        .hero-description {
+            font-size: 1.1rem;
+            color: var(--gray-text);
+            max-width: 700px;
+            margin-bottom: 3rem;
+            line-height: 1.8;
+        }
+
+        .cta-group {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 4rem;
+        }
+
+        .btn {
+            padding: 1rem 2.5rem;
+            border-radius: 0;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.95rem;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            border: 2px solid;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary {
+            background: var(--cyber-green);
+            color: var(--darker-bg);
+            border-color: var(--cyber-green);
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.4);
+        }
+
+        .btn-primary:hover {
+            background: transparent;
+            color: var(--cyber-green);
+            box-shadow: 0 0 30px rgba(0, 255, 65, 0.6);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--cyber-blue);
+            border-color: var(--cyber-blue);
+        }
+
+        .btn-secondary:hover {
+            background: var(--cyber-blue);
+            color: var(--darker-bg);
+            box-shadow: 0 0 20px rgba(0, 217, 255, 0.4);
+        }
+
+        /* Stats Bar */
+        .stats-bar {
+            background: rgba(0, 255, 65, 0.05);
+            border: 1px solid var(--cyber-green);
+            padding: 2rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 2rem;
+            margin-bottom: 4rem;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 900;
+            color: var(--cyber-green);
+            text-shadow: 0 0 10px var(--cyber-green);
+        }
+
+        .stat-label {
+            color: var(--gray-text);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-top: 0.5rem;
+        }
+
+        /* Terminal Section */
+        .terminal-section {
+            padding: 6rem 0;
+        }
+
+        .terminal {
+            background: rgba(10, 14, 39, 0.9);
+            border: 2px solid var(--cyber-green);
+            box-shadow: 0 0 40px rgba(0, 255, 65, 0.2);
+            position: relative;
+        }
+
+        .terminal::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, var(--cyber-green), var(--cyber-blue), var(--cyber-red));
+            z-index: -1;
+            animation: borderGlow 3s ease-in-out infinite;
+        }
+
+        @keyframes borderGlow {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.7; }
+        }
+
+        .terminal-header {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--cyber-green);
+        }
+
+        .terminal-title {
+            color: var(--cyber-green);
+            font-family: 'Orbitron', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .terminal-controls {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .terminal-btn {
+            width: 12px;
+            height: 12px;
+            border-radius: 0;
+            border: 1px solid;
+        }
+
+        .btn-close { background: var(--cyber-red); border-color: var(--cyber-red); }
+        .btn-minimize { background: var(--cyber-blue); border-color: var(--cyber-blue); }
+        .btn-maximize { background: var(--cyber-green); border-color: var(--cyber-green); }
+
+        .terminal-body {
+            padding: 2rem;
+            font-size: 0.95rem;
+            line-height: 1.8;
+        }
+
+        .terminal-line {
+            display: block;
+            margin-bottom: 0.5rem;
+            opacity: 0;
+            animation: fadeInTerminal 0.5s ease-out forwards;
+        }
+
+        .terminal-line:nth-child(1) { animation-delay: 0.3s; }
+        .terminal-line:nth-child(2) { animation-delay: 0.6s; }
+        .terminal-line:nth-child(3) { animation-delay: 0.9s; }
+        .terminal-line:nth-child(4) { animation-delay: 1.2s; }
+        .terminal-line:nth-child(5) { animation-delay: 1.5s; }
+        .terminal-line:nth-child(6) { animation-delay: 1.8s; }
+        .terminal-line:nth-child(7) { animation-delay: 2.1s; }
+
+        @keyframes fadeInTerminal {
+            from {
+                opacity: 0;
+                transform: translateX(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .prompt { color: var(--cyber-green); }
+        .output { color: var(--light-text); }
+        .success { color: var(--cyber-green); text-shadow: 0 0 5px var(--cyber-green); }
+        .error { color: var(--cyber-red); }
+        .info { color: var(--cyber-blue); }
+
+        /* Levels Grid */
+        .levels-section {
+            padding: 6rem 0;
+            background: linear-gradient(180deg, transparent 0%, rgba(0, 255, 65, 0.02) 100%);
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        .section-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 3rem;
+            font-weight: 900;
+            color: var(--cyber-green);
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            text-shadow: 0 0 20px var(--cyber-green);
+        }
+
+        .section-subtitle {
+            color: var(--gray-text);
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .levels-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .level-card {
+            background: rgba(10, 14, 39, 0.5);
+            border: 1px solid rgba(0, 255, 65, 0.2);
+            padding: 2rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .level-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: var(--cyber-green);
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.3s ease;
+        }
+
+        .level-card:hover {
+            border-color: var(--cyber-green);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 255, 65, 0.2);
+        }
+
+        .level-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .level-number {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2rem;
+            font-weight: 900;
+            color: var(--cyber-green);
+            margin-bottom: 0.5rem;
+            text-shadow: 0 0 10px var(--cyber-green);
+        }
+
+        .level-name {
+            color: var(--cyber-blue);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 1rem;
+        }
+
+        .level-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .tag {
+            padding: 0.25rem 0.75rem;
+            background: rgba(0, 255, 65, 0.1);
+            border: 1px solid rgba(0, 255, 65, 0.3);
+            color: var(--cyber-green);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* Skills Section */
+        .skills-section {
+            padding: 6rem 0;
+        }
+
+        .skills-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .skill-category {
+            background: rgba(10, 14, 39, 0.5);
+            border: 1px solid var(--cyber-blue);
+            padding: 2rem;
+        }
+
+        .skill-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.3rem;
+            color: var(--cyber-blue);
+            margin-bottom: 1.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .skill-title::before {
+            content: '▸';
+            color: var(--cyber-green);
+        }
+
+        .skill-list {
+            list-style: none;
+        }
+
+        .skill-list li {
+            padding: 0.75rem 0;
+            color: var(--light-text);
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .skill-list li::before {
+            content: '>';
+            color: var(--cyber-green);
+        }
+
+        /* CTA Section */
+        .cta-section {
+            padding: 8rem 0;
+            text-align: center;
+            background: linear-gradient(180deg, rgba(0, 255, 65, 0.02) 0%, transparent 100%);
+        }
+
+        .cta-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .cta-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 3rem;
+            font-weight: 900;
+            color: var(--cyber-green);
+            margin-bottom: 1.5rem;
+            text-transform: uppercase;
+            text-shadow: 0 0 20px var(--cyber-green);
+        }
+
+        .cta-description {
+            color: var(--gray-text);
+            font-size: 1.1rem;
+            margin-bottom: 3rem;
+        }
+
+        /* Footer */
+        footer {
+            padding: 3rem 0;
+            border-top: 2px solid var(--cyber-green);
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 2rem;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .footer-links a {
+            color: var(--gray-text);
+            text-decoration: none;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            transition: color 0.3s ease;
+        }
+
+        .footer-links a:hover {
+            color: var(--cyber-green);
+            text-shadow: 0 0 5px var(--cyber-green);
+        }
+
+        .copyright {
+            color: var(--gray-text);
+            font-size: 0.85rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .glitch {
+                font-size: 3rem;
+            }
+
+            .section-title {
+                font-size: 2rem;
+            }
+
+            .cta-title {
+                font-size: 2rem;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .levels-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="scanlines"></div>
+    <div class="matrix-bg"></div>
+
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <a href="#" class="logo">SNOW CRASH</a>
+                <nav>
+                    <ul class="nav-links">
+                        <li><a href="#levels">Levels</a></li>
+                        <li><a href="#skills">Skills</a></li>
+                        <li><a href="https://github.com/Mohamed-Moumni/snow-crash" target="_blank">Repository</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="container">
+                <h1 class="glitch">SNOW CRASH</h1>
+                <p class="hero-subtitle">Security CTF Challenge</p>
+                <p class="hero-description">
+                    A comprehensive capture-the-flag security challenge featuring 15 escalating levels. 
+                    Demonstrates expertise in exploit development, reverse engineering, privilege escalation, 
+                    and vulnerability analysis across multiple attack vectors.
+                </p>
+                <div class="cta-group">
+                    <a href="https://github.com/Mohamed-Moumni/snow-crash" target="_blank" class="btn btn-primary">
+                        ACCESS REPOSITORY →
+                    </a>
+                    <a href="#levels" class="btn btn-secondary">
+                        VIEW CHALLENGES
+                    </a>
+                </div>
+
+                <div class="stats-bar">
+                    <div class="stat">
+                        <div class="stat-value">15</div>
+                        <div class="stat-label">Security Levels</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value">100%</div>
+                        <div class="stat-label">Completion Rate</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value">10+</div>
+                        <div class="stat-label">Attack Vectors</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value">CTF</div>
+                        <div class="stat-label">Format</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="terminal-section">
+            <div class="container">
+                <div class="terminal">
+                    <div class="terminal-header">
+                        <div class="terminal-title">root@snowcrash:~#</div>
+                        <div class="terminal-controls">
+                            <div class="terminal-btn btn-close"></div>
+                            <div class="terminal-btn btn-minimize"></div>
+                            <div class="terminal-btn btn-maximize"></div>
+                        </div>
+                    </div>
+                    <div class="terminal-body">
+                        <span class="terminal-line"><span class="prompt">level03@SnowCrash:~$</span> <span class="output">ls -la</span></span>
+                        <span class="terminal-line output">-rwsr-sr-x 1 flag03 level03 8627 Mar  5  2016 level03</span>
+                        <span class="terminal-line"><span class="prompt">level03@SnowCrash:~$</span> <span class="output">./level03</span></span>
+                        <span class="terminal-line info">Exploit injection point detected...</span>
+                        <span class="terminal-line"><span class="prompt">level03@SnowCrash:~$</span> <span class="output">getflag</span></span>
+                        <span class="terminal-line success">Check flag. Here is your token: qi0maab88jeaj46qoumi7maus</span>
+                        <span class="terminal-line success">✓ FLAG CAPTURED - ACCESS GRANTED TO LEVEL04</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="levels-section" id="levels">
+            <div class="container">
+                <div class="section-header">
+                    <h2 class="section-title">Challenge Levels</h2>
+                    <p class="section-subtitle">
+                        15 progressively difficult security challenges covering multiple vulnerability classes
+                    </p>
+                </div>
+
+                <div class="levels-grid">
+                    <div class="level-card">
+                        <div class="level-number">00-04</div>
+                        <div class="level-name">Basic Exploitation</div>
+                        <div class="level-tags">
+                            <span class="tag">File Permissions</span>
+                            <span class="tag">Password Cracking</span>
+                            <span class="tag">Binary Analysis</span>
+                        </div>
+                    </div>
+
+                    <div class="level-card">
+                        <div class="level-number">05-07</div>
+                        <div class="level-name">Privilege Escalation</div>
+                        <div class="level-tags">
+                            <span class="tag">SUID Binaries</span>
+                            <span class="tag">Cron Jobs</span>
+                            <span class="tag">Path Hijacking</span>
+                        </div>
+                    </div>
+
+                    <div class="level-card">
+                        <div class="level-number">08-10</div>
+                        <div class="level-name">Network Analysis</div>
+                        <div class="level-tags">
+                            <span class="tag">PCAP Files</span>
+                            <span class="tag">Packet Sniffing</span>
+                            <span class="tag">Token Extraction</span>
+                        </div>
+                    </div>
+
+                    <div class="level-card">
+                        <div class="level-number">11-12</div>
+                        <div class="level-name">Web Exploitation</div>
+                        <div class="level-tags">
+                            <span class="tag">PHP</span>
+                            <span class="tag">Command Injection</span>
+                            <span class="tag">Web Shells</span>
+                        </div>
+                    </div>
+
+                    <div class="level-card">
+                        <div class="level-number">13-14</div>
+                        <div class="level-name">Advanced Techniques</div>
+                        <div class="level-tags">
+                            <span class="tag">Reverse Engineering</span>
+                            <span class="tag">GDB</span>
+                            <span class="tag">Binary Exploitation</span>
+                        </div>
+                    </div>
+
+                    <div class="level-card">
+                        <div class="level-number">BONUS</div>
+                        <div class="level-name">Elite Challenges</div>
+                        <div class="level-tags">
+                            <span class="tag">Advanced RE</span>
+                            <span class="tag">Cryptography</span>
+                            <span class="tag">Race Conditions</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="skills-section" id="skills">
+            <div class="container">
+                <div class="section-header">
+                    <h2 class="section-title">Security Skills Demonstrated</h2>
+                    <p class="section-subtitle">
+                        Comprehensive security knowledge applicable to platform engineering and DevSecOps
+                    </p>
+                </div>
+
+                <div class="skills-grid">
+                    <div class="skill-category">
+                        <h3 class="skill-title">Exploit Development</h3>
+                        <ul class="skill-list">
+                            <li>Buffer overflow exploitation</li>
+                            <li>SUID binary abuse</li>
+                            <li>Command injection techniques</li>
+                            <li>Path traversal attacks</li>
+                            <li>Environment variable manipulation</li>
+                        </ul>
+                    </div>
+
+                    <div class="skill-category">
+                        <h3 class="skill-title">Reverse Engineering</h3>
+                        <ul class="skill-list">
+                            <li>Binary disassembly (objdump, gdb)</li>
+                            <li>Dynamic analysis techniques</li>
+                            <li>Assembly language (x86/x64)</li>
+                            <li>Memory debugging</li>
+                            <li>Control flow analysis</li>
+                        </ul>
+                    </div>
+
+                    <div class="skill-category">
+                        <h3 class="skill-title">Network Security</h3>
+                        <ul class="skill-list">
+                            <li>Packet capture analysis (Wireshark)</li>
+                            <li>Protocol understanding (TCP/IP)</li>
+                            <li>Credential extraction</li>
+                            <li>Man-in-the-middle concepts</li>
+                            <li>Network traffic analysis</li>
+                        </ul>
+                    </div>
+
+                    <div class="skill-category">
+                        <h3 class="skill-title">System Security</h3>
+                        <ul class="skill-list">
+                            <li>Linux privilege escalation</li>
+                            <li>File permission exploitation</li>
+                            <li>Cron job hijacking</li>
+                            <li>Symbolic link attacks</li>
+                            <li>Race condition exploitation</li>
+                        </ul>
+                    </div>
+
+                    <div class="skill-category">
+                        <h3 class="skill-title">Web Application Security</h3>
+                        <ul class="skill-list">
+                            <li>Command injection</li>
+                            <li>PHP vulnerability analysis</li>
+                            <li>Web shell deployment</li>
+                            <li>Parameter manipulation</li>
+                            <li>Server-side exploitation</li>
+                        </ul>
+                    </div>
+
+                    <div class="skill-category">
+                        <h3 class="skill-title">Cryptography & Encoding</h3>
+                        <ul class="skill-list">
+                            <li>Caesar cipher cryptanalysis</li>
+                            <li>Base64 encoding/decoding</li>
+                            <li>Hash cracking (MD5, SHA)</li>
+                            <li>Password hash analysis</li>
+                            <li>Encoding scheme recognition</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="cta-section">
+            <div class="container">
+                <div class="cta-content">
+                    <h2 class="cta-title">READY TO DIVE INTO THE CODE?</h2>
+                    <p class="cta-description">
+                        Explore the complete write-ups, exploitation techniques, and security insights 
+                        from this comprehensive CTF challenge. Each level documented with detailed analysis.
+                    </p>
+                    <div class="cta-group" style="justify-content: center;">
+                        <a href="https://github.com/Mohamed-Moumni/snow-crash" target="_blank" class="btn btn-primary">
+                            ACCESS REPOSITORY →
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="copyright">
+                    © 2026 MOHAMED MOUMNI • SECURITY ENGINEER • PLATFORM SPECIALIST
+                </div>
+                <ul class="footer-links">
+                    <li><a href="https://github.com/Mohamed-Moumni/snow-crash" target="_blank">GitHub</a></li>
+                    <li><a href="https://github.com/Mohamed-Moumni" target="_blank">Portfolio</a></li>
+                </ul>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
